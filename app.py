@@ -19,7 +19,7 @@ if 'game_state' not in st.session_state:
         'money': 100,
         'tower_hp': 10,
         'game_over': False,
-        'towers':  {'attr': 'fire'}},
+        'towers':  {{'attr': 'fire'}},
         'enemies': [{'id': 0, 'x': 0, 'y': 3, 'attr': 'fire', 'hp': 5}]
     }
 
