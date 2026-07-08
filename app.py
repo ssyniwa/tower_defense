@@ -27,15 +27,36 @@ st.markdown("""
 
 state = st.session_state.game_state
 
-# --- ゲームロジック ---
+# --- 描画ロジック ---
+def draw_grid():
+    for y in range(6):
+        cols = st.columns(6)
+        for x in range(6):
+            with cols[x]:
+                # 画像の選択
+                img = "images/grass.png"
+                if y == 3: img = "images/path.png"
+                if (x, y) in state['towers']: img = "images/tower.png"
+                for e in state['enemies']:
+                    if e['x'] == x and e['y'] == y: img = "images/enemy.png"
+                
+                # 画像表示
+                st.image(img, use_container_width=True)
+                
+                # クリックボタン（画像のすぐ下に配置）
+                if st.button("建", key=f"b_{x}_{y}"):
+                    if y != 3 and (x, y) not in state['towers'] and state['money'] >= 50:
+                        state['towers'][(x, y)] = True
+                        state['money'] -= 50
+                        st.rerun()
+
+# --- ゲーム進行処理 ---
 def game_logic():
-    # 1. 敵の移動
     for e in state['enemies']:
         e['x'] += 1
-        if e['x'] >= 6:  # ゴール判定
+        if e['x'] >= 6:
             state['tower_hp'] -= 1
             e['x'] = 0
-            e['hp'] = 3
     
     # 2. タワーの攻撃
     for pos, tower in state['towers'].items():
@@ -54,38 +75,19 @@ def game_logic():
     state['enemies'] = new_enemies
     
     # 4. ゲームオーバー判定
-    if state['tower_hp'] <= 0:
-        state['game_over'] = True
+    if state['tower_hp'] <= 0: state['game_over'] = True
 
-# --- 描画処理 ---
+# --- メイン画面 ---
 st.title("🏰 Magic Defense")
-col1, col2 = st.columns(2)
-col1.metric("Castle HP", state['tower_hp'])
-col2.metric("Gold", state['money'])
+st.write(f"HP: {state['tower_hp']} | Gold: {state['money']}")
 
 if not state['game_over']:
-    # グリッド描画
-    for y in range(6):
-        cols = st.columns(6)
-        for x in range(6):
-            label = "🌿"
-            if y == 3: label = "🛤️" # 道
-            if (x, y) in state['towers']: label = "🏰"
-            for e in state['enemies']:
-                if e['x'] == x and e['y'] == y: label = "👿"
-            
-            with cols[x]:
-                if st.button(label, key=f"b_{x}_{y}"):
-                    if y != 3 and (x, y) not in state['towers'] and state['money'] >= 50:
-                        state['towers'][(x, y)] = True
-                        state['money'] -= 50
-                        st.rerun()
-
-    if st.button("▶ 次のターン進める"):
+    draw_grid()
+    if st.button("▶ 次のターン"):
         game_logic()
         st.rerun()
 else:
     st.error("GAME OVER!")
     if st.button("リトライ"):
-        del st.session_state.game_state
+        st.session_state.game_state = None
         st.rerun()
