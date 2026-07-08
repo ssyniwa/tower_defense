@@ -51,74 +51,35 @@ GAME_STYLE = """
 </style>
 """
 
-def draw_grid_html():
-    """
-    フェーズ1改良: HTML/JSを使ってボタンを描画・更新する。
-    Streamlitのボタンリロードによるチラつきを抑える。
-    """
+def draw_grid():
+    """標準のボタンをCSSでカスタムして見た目を整える"""
+    # 簡易CSS（ボタンを正方形に近くする）
+    st.markdown("""
+    <style>
+    div[data-testid="column"] { width: 12% !important; padding: 1px !important; }
+    button { width: 100% !important; aspect-ratio: 1/1 !important; font-size: 20px !important; padding: 0 !important; }
+    </style>
+    """, unsafe_allow_html=True)
+
     state = st.session_state.game_state
     
-    # 現在のグリッド状態をHTMLの文字列として構築
-    grid_html = GAME_STYLE + '<div class="game-grid">'
-    
-    # 固定のパス（簡易的にy=4の列を通ることにする）
-    path_y = 4
-    
     for y in range(GRID_SIZE):
+        cols = st.columns(GRID_SIZE)
         for x in range(GRID_SIZE):
-            # セルの基本クラス
-            cell_class = "cell"
-            content = ""
-            
-            # 1. 道の判定
-            if y == path_y:
-                cell_class += " cell-path"
-            
-            # 2. タワーの描画 (画像/絵文字)
-            if (x, y) in state['towers']:
-                content = "🏰" # タワー画像
-                
-            # 3. 敵の描画 (画像/絵文字) - 重なった場合は敵を優先
-            # チカチカさせるため、tickの偶奇で画像を変える（アニメーションの基本）
+            # 表示内容の決定
+            label = "🌱"
+            if y == 4: label = "🛤️" # 道
+            if (x, y) in state['towers']: label = "🏰"
             for e in state['enemies']:
-                if e['x'] == x and e['y'] == y:
-                    # HPによって色（絵文字）を変える
-                    if e['hp'] > 3:
-                        content = "👿" if state['tick'] % 2 == 0 else "👺"
-                    else:
-                        content = "👾" # 瀕死
-            
-            # 各セルをdiv要素として作成。クリックイベントをstreamlit側に送る細工をする
-            # idを "x-y" の形式にする
-            grid_html += f'<div class="cell {cell_class}" id="{x}-{y}" onclick="parent.postMessage(this.id, \'*\')">{content}</div>'
-            
-    grid_html += '</div>'
+                if e['x'] == x and e['y'] == y: label = "👿"
 
-    # StreamlitでHTMLを表示。これがゲーム画面になる
-    # components.html は高さ自動調整が難しいため、グリッドサイズから固定値を計算
-    component_height = GRID_SIZE * (CELL_SIZE_PX + 4) 
-    clicked_cell = st.components.v1.html(grid_html, height=component_height, scrolling=False)
-    
-    # JavaScriptからメッセージ（クリックされたID）が送られてきたら処理する
-    # st.components.v1.html は最後に評価された値を返す性質を利用する
-    if clicked_cell:
-        try:
-            x_str, y_str = clicked_cell.split('-')
-            pos = (int(x_str), int(y_str))
-            
-            # タワー建設ロジック（道以外、所持金50以上）
-            if pos[1] == path_y:
-                st.warning("そこは道です！")
-            elif pos in state['towers']:
-                st.warning("既に塔があります")
-            elif state['money'] >= 50:
-                state['towers'][pos] = {'level': 1}
-                state['money'] -= 50
-                st.rerun() # 即座に反映
-            else:
-                st.warning("資金不足です (Need 50G)")
-        except ValueError:
-            pass
+            with cols[x]:
+                if st.button(label, key=f"btn_{x}_{y}"):
+                    # クリック時の処理
+                    if y != 4 and (x, y) not in state['towers'] and state['money'] >= 50:
+                        state['towers'][(x, y)] = {'type': 'magic'}
+                        state['money'] -= 50
+                        st.rerun()
 
 def update_game():
     """フェーズ2 & 3: 移動・攻撃ロジック（変更なし）"""
