@@ -4,9 +4,9 @@ import streamlit as st
 st.set_page_config(page_title="Magic Defense", layout="centered")
 # 属性定義: (画像接頭辞, 弱点属性)
 ATTRIBUTES = {
-    "fire": "grass",  # 火は草に強い
+    "fire": "stan",  # 火は草に強い
     "water": "fire",  # 水は火に強い
-    "grass": "water"  # 草は水に強い
+    "stan": "water"  # 草は水に強い
 }
 
 def get_image_path(obj_type, attr):
