@@ -86,6 +86,7 @@ def draw_grid():
                         target_enemy = next((e for e in state['enemies'] if abs(e['x'] - x) <= 1), None)
                         attr = get_counter_attr(target_enemy['attr']) if target_enemy else "fire"
                         state['towers'][(x, y)] = {'attr': attr}
+                        state['money'] -= 50
                         st.rerun()
 
 # --- ゲーム進行処理 ---
