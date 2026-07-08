@@ -20,7 +20,7 @@ if 'game_state' not in st.session_state:
         'tower_hp': 10,
         'game_over': False,
         'towers':  [{'attr': 'fire'}],
-        'enemies': [{'id': 0, 'x': 0, 'y': 3, 'attr': 'fire', 'hp': 5}]
+        'enemies': [{'id': 0, 'x': 0, 'y': 3, 'attr': 'stan', 'hp': 5}]
     }
 
 # --- カスタムCSS（スマホ最適化） ---
