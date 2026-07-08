@@ -9,9 +9,16 @@ ATTRIBUTES = {
     "stan": "water"  # 草は水に強い
 }
 
-def get_image_path(obj_type, attr):
-    """属性に基づいた画像パスを返す: images/fire_tower.png など"""
-    return f"images/{attr}_{obj_type}.png"
+def get_image_path(obj_type, attr, stage):
+    """ステージと属性に基づいた画像パスを返す: images/fire_tower_stage1.png など"""
+    return f"images/{attr}_{obj_type}_stage{stage}.png"
+
+def get_counter_attr(enemy_attr):
+    """敵の属性に対する対抗属性（弱点を突く属性）を自動選択"""
+    # 敵が"thunder"なら、それに強い"fire"を返す
+    # 逆引きの辞書を作成
+    counter_map = {v: k for k, v in ATTRIBUTES.items()}
+    return counter_map[enemy_attr]
 # --- 初期化 ---
 if 'game_state' not in st.session_state:
     st.session_state.game_state = {
@@ -20,7 +27,7 @@ if 'game_state' not in st.session_state:
         'tower_hp': 10,
         'game_over': False,
         'towers':  {},
-        'enemies': [{'id': 0, 'x': 0, 'y': 3, 'attr': 'stan', 'hp': 5}]
+        'enemies': [{'id': 0, 'x': 0, 'y': 3, 'attr': random.choice(list(ATTRIBUTES.keys())), 'hp': 5}]
     }
 
 # --- カスタムCSS（スマホ最適化） ---
@@ -47,20 +54,24 @@ def draw_grid():
                 # 画像の決定ロジック
                 if (x, y) in state['towers']:
                     attr = state['towers'][(x, y)]['attr']
-                    img = get_image_path("tower", attr)
+                    img = get_image_path("tower", attr, state['stage'])
                 else:
                     img = "images/path.png" if y == 3 else "images/grass.png"
                     for e in state['enemies']:
                         if e['x'] == x and e['y'] == y:
-                            img = get_image_path("enemy", e['attr'])
+                            img = get_image_path("enemy", e['attr'], state['stage'])
                 
                 st.image(img, use_container_width=True)
                 
-                # 建設ボタン（属性選択肢を表示）
+                # 自動属性決定ロジックを用いた建設ボタン
                 if st.button("建", key=f"b_{x}_{y}"):
-                    # 簡易UI: 属性選択を表示などにするのがベター
-                    state['towers'][(x, y)] = {'attr': 'fire'} 
-                    st.rerun()
+                    if y != 3 and (x, y) not in state['towers']:
+                        # 近くにいる敵の属性を調べて自動的にメタ属性を決定
+                        target_enemy = next((e for e in state['enemies'] if abs(e['x'] - x) <= 2), None)
+                        attr = get_counter_attr(target_enemy['attr']) if target_enemy else "fire"
+                        
+                        state['towers'][(x, y)] = {'attr': attr}
+                        st.rerun()
 
 # --- ゲーム進行処理 ---
 def game_logic():
@@ -74,7 +85,6 @@ def game_logic():
     for pos, tower in state['towers'].items():
         for e in state['enemies']:
             if abs(pos[0] - e['x']) <= 1 and abs(pos[1] - e['y']) <= 1:
-                # 属性相性ボーナス
                 damage = 2 if ATTRIBUTES[tower['attr']] == e['attr'] else 1
                 e['hp'] -= damage
     # 3. 撃破と報酬
@@ -86,10 +96,12 @@ def game_logic():
             state['money'] += 20
     state['enemies'] = new_enemies
     # ステージ進行処理
+    # 敵の全滅時
     if len(state['enemies']) == 0:
-        state['stage'] += 1
-        # 新しい敵を配置（ステージが進むと属性がバラける）
-        state['enemies'].append({'id': state['stage'], 'x': 0, 'y': 3, 'attr': 'water', 'hp': 5 + state['stage']})
+        state['stage'] = min(state['stage'] + 1, 10) # 10ステージまで
+        # 次の敵はランダム生成
+        new_attr = random.choice(list(ATTRIBUTES.keys()))
+        state['enemies'].append({'id': random.randint(1, 100), 'x': 0, 'y': 3, 'attr': new_attr, 'hp': 5 + state['stage']})
     # 4. ゲームオーバー判定
     if state['tower_hp'] <= 0: state['game_over'] = True
 
