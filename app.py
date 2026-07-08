@@ -9,9 +9,14 @@ ATTRIBUTES = {
     "stan": "water"  # 草は水に強い
 }
 
-def get_image_path(obj_type, attr, stage):
-    """ステージと属性に基づいた画像パスを返す: images/fire_tower_stage1.png など"""
-    return f"images/{attr}_{obj_type}_stage{stage}.png"
+def get_image_path(obj_type, stage, attr=None):
+    """
+    属性がある場合: images/fire_tower_stage1.png
+    属性がない場合: images/path_stage1.png
+    """
+    if attr:
+        return f"images/{attr}_{obj_type}_stage{stage}.png"
+    return f"images/{obj_type}_stage{stage}.png"
 
 def get_counter_attr(enemy_attr):
     """敵の属性に対する対抗属性（弱点を突く属性）を自動選択"""
@@ -47,29 +52,39 @@ state = st.session_state.game_state
 # --- 描画ロジック ---
 def draw_grid():
     state = st.session_state.game_state
+    stage = state['stage']
+    
     for y in range(6):
         cols = st.columns(6)
         for x in range(6):
             with cols[x]:
-                # 画像の決定ロジック
-                if (x, y) in state['towers']:
+                # 1. 画像の優先順位決定
+                img = None
+                
+                # 敵のチェック
+                for e in state['enemies']:
+                    if e['x'] == x and e['y'] == y:
+                        img = get_image_path("enemy", stage, e['attr'])
+                
+                # 塔のチェック
+                if not img and (x, y) in state['towers']:
                     attr = state['towers'][(x, y)]['attr']
-                    img = get_image_path("tower", attr, state['stage'])
-                else:
-                    img = "images/path.png" if y == 3 else "images/grass.png"
-                    for e in state['enemies']:
-                        if e['x'] == x and e['y'] == y:
-                            img = get_image_path("enemy", e['attr'], state['stage'])
+                    img = get_image_path("tower", stage, attr)
+                
+                # 背景のチェック
+                if not img:
+                    if y == 3:
+                        img = get_image_path("path", stage)
+                    else:
+                        img = get_image_path("grass", stage)
                 
                 st.image(img, use_container_width=True)
                 
-                # 自動属性決定ロジックを用いた建設ボタン
+                # 建設ボタン
                 if st.button("建", key=f"b_{x}_{y}"):
                     if y != 3 and (x, y) not in state['towers']:
-                        # 近くにいる敵の属性を調べて自動的にメタ属性を決定
-                        target_enemy = next((e for e in state['enemies'] if abs(e['x'] - x) <= 2), None)
+                        target_enemy = next((e for e in state['enemies'] if abs(e['x'] - x) <= 1), None)
                         attr = get_counter_attr(target_enemy['attr']) if target_enemy else "fire"
-                        
                         state['towers'][(x, y)] = {'attr': attr}
                         st.rerun()
 
