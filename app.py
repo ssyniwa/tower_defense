@@ -1,5 +1,5 @@
 import streamlit as st
-
+import random
 # 画面設定
 st.set_page_config(page_title="Magic Defense", layout="centered")
 # 属性定義: (画像接頭辞, 弱点属性)
