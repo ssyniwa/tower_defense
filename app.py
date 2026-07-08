@@ -2,15 +2,24 @@ import streamlit as st
 
 # 画面設定
 st.set_page_config(page_title="Magic Defense", layout="centered")
+# 属性定義: (画像接頭辞, 弱点属性)
+ATTRIBUTES = {
+    "fire": "grass",  # 火は草に強い
+    "water": "fire",  # 水は火に強い
+    "grass": "water"  # 草は水に強い
+}
 
+def get_image_path(obj_type, attr):
+    """属性に基づいた画像パスを返す: images/fire_tower.png など"""
+    return f"images/{attr}_{obj_type}.png"
 # --- 初期化 ---
 if 'game_state' not in st.session_state:
     st.session_state.game_state = {
-        'tower_hp': 5,
+        'stage': 1,
         'money': 100,
-        'enemies': [{'id': 0, 'x': 0, 'y': 3, 'hp': 3}],
-        'towers': {},
-        'game_over': False
+        'tower_hp': 10,
+        'towers': {}, # {(x, y): {'attr': 'fire'}}
+        'enemies': [{'id': 0, 'x': 0, 'y': 3, 'attr': 'fire', 'hp': 5}]
     }
 
 # --- カスタムCSS（スマホ最適化） ---
@@ -29,26 +38,28 @@ state = st.session_state.game_state
 
 # --- 描画ロジック ---
 def draw_grid():
+    state = st.session_state.game_state
     for y in range(6):
         cols = st.columns(6)
         for x in range(6):
             with cols[x]:
-                # 画像の選択
-                img = "images/grass.png"
-                if y == 3: img = "images/path.png"
-                if (x, y) in state['towers']: img = "images/tower.png"
-                for e in state['enemies']:
-                    if e['x'] == x and e['y'] == y: img = "images/enemy.png"
+                # 画像の決定ロジック
+                if (x, y) in state['towers']:
+                    attr = state['towers'][(x, y)]['attr']
+                    img = get_image_path("tower", attr)
+                else:
+                    img = "images/path.png" if y == 3 else "images/grass.png"
+                    for e in state['enemies']:
+                        if e['x'] == x and e['y'] == y:
+                            img = get_image_path("enemy", e['attr'])
                 
-                # 画像表示
                 st.image(img, use_container_width=True)
                 
-                # クリックボタン（画像のすぐ下に配置）
+                # 建設ボタン（属性選択肢を表示）
                 if st.button("建", key=f"b_{x}_{y}"):
-                    if y != 3 and (x, y) not in state['towers'] and state['money'] >= 50:
-                        state['towers'][(x, y)] = True
-                        state['money'] -= 50
-                        st.rerun()
+                    # 簡易UI: 属性選択を表示などにするのがベター
+                    state['towers'][(x, y)] = {'attr': 'fire'} 
+                    st.rerun()
 
 # --- ゲーム進行処理 ---
 def game_logic():
@@ -61,10 +72,10 @@ def game_logic():
     # 2. タワーの攻撃
     for pos, tower in state['towers'].items():
         for e in state['enemies']:
-            # 隣接8マス以内なら攻撃
             if abs(pos[0] - e['x']) <= 1 and abs(pos[1] - e['y']) <= 1:
-                e['hp'] -= 1
-    
+                # 属性相性ボーナス
+                damage = 2 if ATTRIBUTES[tower['attr']] == e['attr'] else 1
+                e['hp'] -= damage
     # 3. 撃破と報酬
     new_enemies = []
     for e in state['enemies']:
@@ -73,7 +84,11 @@ def game_logic():
         else:
             state['money'] += 20
     state['enemies'] = new_enemies
-    
+    # ステージ進行処理
+    if len(state['enemies']) == 0:
+        state['stage'] += 1
+        # 新しい敵を配置（ステージが進むと属性がバラける）
+        state['enemies'].append({'id': state['stage'], 'x': 0, 'y': 3, 'attr': 'water', 'hp': 5 + state['stage']})
     # 4. ゲームオーバー判定
     if state['tower_hp'] <= 0: state['game_over'] = True
 
