@@ -32,7 +32,7 @@ def get_enemies_for_stage(stage):
     enemies = []
     for i in range(count):
         # 属性をランダムに割り当て
-        attr = random.choice(['fire', 'water', 'thunder'])
+        attr = random.choice(['fire', 'water', 'stan'])
         # 敵を少しずつずらして出現させる（xをマイナスに設定）
         enemies.append({
             'id': i, 'x': -i, 'y': get_path(stage)[0], 
