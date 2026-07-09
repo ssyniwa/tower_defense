@@ -166,7 +166,7 @@ def game_logic():
             e['y'] = path[e['x']]
             # 道の先にタワーがあればダメージを与えるロジック
             if (e['x'], e['y']) in state['towers']:
-                state['towers'][(e['x'], e['y'])]['hp'] -= 1
+                state['towers'][(e['x'], e['y'])]['hp'] -= 2
                 # 塔のHPが0になったら破壊
                 if state['towers'][(e['x'], e['y'])]['hp'] <= 0:
                     del state['towers'][(e['x'], e['y'])]
@@ -189,7 +189,7 @@ def game_logic():
 
 # --- メイン画面 ---
 st.title("🏰 Magic Defense")
-st.write(f"HP: {state['tower_hp']} | Gold: {state['money']}")
+st.write(f"Gold: {state['money']}")
 
 if not state['game_over']:
     draw_grid()
