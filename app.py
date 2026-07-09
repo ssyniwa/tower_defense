@@ -131,8 +131,9 @@ def draw_grid():
                         # 建設時の処理（game_logic付近を修正）
                         if st.button("建", key=f"b_{x}_{y}"):
                             if state['money'] >= 50: # 資金チェック追加
+                                range_bonus = state['stage'] // 3 
                                 # 周囲の敵を検索して属性を決定
-                                target_enemy = next((e for e in state['enemies'] if abs(e['x'] - x) <= 1 and abs(e['y'] - y) <= 1), None)
+                                target_enemy = next((e for e in state['enemies'] if abs(e['x'] - x) <= (1+range_bonus) and abs(e['y'] - y) <= (1+range_bonus)), None)
                                 attr = get_counter_attr(target_enemy['attr']) if target_enemy else "fire"
                                 
                                 # HPを含めて保存
