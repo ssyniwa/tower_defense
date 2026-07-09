@@ -128,15 +128,8 @@ def draw_grid():
                 
                 is_path = (y == current_path[x])
                 
+                st.image(img, use_container_width=True)
                 
-                style = "border: 4px solid #FFD700; border-radius: 8px;" if is_path else ""
-                
-                # st.imageの代わりにHTMLでラップして表示
-                st.markdown(f"""
-                <div style="{style}">
-                    <img src="data:image/png;base64,..." style="width:100%;">
-                </div>
-                """, unsafe_allow_html=True)
                 
                 if y != current_path[x]:
                     # 既に塔があるか確認
