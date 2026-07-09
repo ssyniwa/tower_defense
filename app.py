@@ -165,36 +165,36 @@ def game_logic():
         e['x'] += 1
         
         # 移動先が盤面内か
-        if e['x'] < 6:
-            e['y'] = path[e['x']]
-            
-            # 【重要】敵の新しい座標がタワーの座標と一致したら即座にHPを減らす
-            if (e['x'], e['y']+1) in state['towers'] :
-                # ダメージを与え、反映させる
-                state['towers'][(e['x'], e['y']+1)]['hp'] -= 1
-                # HPが0以下なら塔を即座に削除
-                if state['towers'][(e['x'], e['y']+1)]['hp'] <= 0:
-                    del state['towers'][(e['x'], e['y']+1)]
-            elif (e['x'], e['y']-1) in state['towers'] :
-                # ダメージを与え、反映させる
-                state['towers'][(e['x'], e['y']-1)]['hp'] -= 1
-                # HPが0以下なら塔を即座に削除
-                if state['towers'][(e['x'], e['y']-1)]['hp'] <= 0:
-                    del state['towers'][(e['x'], e['y']-1)]
-            elif (e['x']+1, e['y']) in state['towers'] :
-                # ダメージを与え、反映させる
-                state['towers'][(e['x']+1, e['y'])]['hp'] -= 1
-                # HPが0以下なら塔を即座に削除
-                if state['towers'][(e['x']+1, e['y'])]['hp'] <= 0:
-                    del state['towers'][(e['x']+1, e['y'])]
-            elif (e['x']-1, e['y']) in state['towers'] :
-                # ダメージを与え、反映させる
-                state['towers'][(e['x']-1, e['y'])]['hp'] -= 1
-                # HPが0以下なら塔を即座に削除
-                if state['towers'][(e['x']-1, e['y'])]['hp'] <= 0:
-                    del state['towers'][(e['x']-1, e['y'])]        
+        
+        e['y'] = path[e['x']]
+        
+        # 【重要】敵の新しい座標がタワーの座標と一致したら即座にHPを減らす
+        if (e['x'], e['y']+1) in state['towers'] :
+            # ダメージを与え、反映させる
+            state['towers'][(e['x'], e['y']+1)]['hp'] -= 1
+            # HPが0以下なら塔を即座に削除
+            if state['towers'][(e['x'], e['y']+1)]['hp'] <= 0:
+                del state['towers'][(e['x'], e['y']+1)]
+        elif (e['x'], e['y']-1) in state['towers'] :
+            # ダメージを与え、反映させる
+            state['towers'][(e['x'], e['y']-1)]['hp'] -= 1
+            # HPが0以下なら塔を即座に削除
+            if state['towers'][(e['x'], e['y']-1)]['hp'] <= 0:
+                del state['towers'][(e['x'], e['y']-1)]
+        elif (e['x']+1, e['y']) in state['towers'] :
+            # ダメージを与え、反映させる
+            state['towers'][(e['x']+1, e['y'])]['hp'] -= 1
+            # HPが0以下なら塔を即座に削除
+            if state['towers'][(e['x']+1, e['y'])]['hp'] <= 0:
+                del state['towers'][(e['x']+1, e['y'])]
+        elif (e['x']-1, e['y']) in state['towers'] :
+            # ダメージを与え、反映させる
+            state['towers'][(e['x']-1, e['y'])]['hp'] -= 1
+            # HPが0以下なら塔を即座に削除
+            if state['towers'][(e['x']-1, e['y'])]['hp'] <= 0:
+                del state['towers'][(e['x']-1, e['y'])]        
         # ゴール判定
-        elif e['x'] >= 6:
+        if e['x'] >= 6:
             state['tower_hp'] -= 1
             e['x'] = 0
 
