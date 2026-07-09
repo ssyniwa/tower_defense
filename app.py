@@ -43,7 +43,6 @@ def reset_game_state(new_stage):
     st.session_state.game_state.update({
         'stage': new_stage,
         'towers': {},
-        'money': 150,
         'enemies': get_enemies_for_stage(new_stage)
     })
 def get_image_path(obj_type, stage, attr=None):
