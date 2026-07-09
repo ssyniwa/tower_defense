@@ -90,7 +90,7 @@ def draw_grid():
     state = st.session_state.game_state
     stage = state['stage']
     current_path = get_path(stage)
-    
+    st.write(f"### 残りの敵: {len(state['enemies'])}体")
     for y in range(6):
         cols = st.columns(6)
         for x in range(6):
@@ -117,7 +117,9 @@ def draw_grid():
                         img = get_image_path("grass", stage)
                 
                 is_path = (y == current_path[x])
-                
+                for e in state['enemies']:
+                    if e['x'] == x and e['y'] == y:
+                        st.progress(max(e['hp'] / (5 + stage), 0.0))
                 st.image(img, use_container_width=True)
                 
                 if is_tower:
@@ -202,7 +204,14 @@ def game_logic():
 # --- メイン画面 ---
 st.title("🏰 Magic Defense")
 st.write(f"HP: {state['tower_hp']} | Gold: {state['money']}")
-
+# 【追加】全滅時のクリア判定表示
+if len(state['enemies']) == 0 and not state.get('game_over', False):
+    st.balloons()
+    st.success("ステージクリア！")
+    if st.button("次のステージへ"):
+        # 次のステージへ進む処理
+        game_logic()
+        st.rerun()
 if not state['game_over']:
     # 1. 描画を先に行う（現在の状態を描画）
     draw_grid()
