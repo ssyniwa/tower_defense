@@ -83,7 +83,16 @@ st.markdown("""
     }
 </style>
 """, unsafe_allow_html=True)
-
+st.markdown("""
+<style>
+    /* 道路のセルを囲むクラス */
+    .path-cell {
+        border: 3px solid #FFD700 !important; /* ゴールドの枠線 */
+        box-sizing: border-box;
+        border-radius: 5px;
+    }
+</style>
+""", unsafe_allow_html=True)
 state = st.session_state.game_state
 
 # --- 描画ロジック ---
@@ -117,7 +126,17 @@ def draw_grid():
                     else:
                         img = get_image_path("grass", stage)
                 
-                st.image(img, use_container_width=True)
+                is_path = (y == current_path[x])
+                
+                
+                style = "border: 4px solid #FFD700; border-radius: 8px;" if is_path else ""
+                
+                # st.imageの代わりにHTMLでラップして表示
+                st.markdown(f"""
+                <div style="{style}">
+                    <img src="data:image/png;base64,..." style="width:100%;">
+                </div>
+                """, unsafe_allow_html=True)
                 
                 if y != current_path[x]:
                     # 既に塔があるか確認
