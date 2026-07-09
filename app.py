@@ -194,8 +194,11 @@ def game_logic():
     
     # 4. 全滅・ステージ進行判定
     if len(state['enemies']) == 0:
+        st.balloons()
+        st.success("ステージクリア！")
         state['money'] += 100
-        reset_game_state(state['stage'] + 1)
+        if st.button("次のステージへ"):
+            reset_game_state(state['stage'] + 1)
     
     # 5. ゲームオーバー判定
     if state['tower_hp'] <= 0:
@@ -204,14 +207,7 @@ def game_logic():
 # --- メイン画面 ---
 st.title("🏰 Magic Defense")
 st.write(f"HP: {state['tower_hp']} | Gold: {state['money']}")
-# 【追加】全滅時のクリア判定表示
-if len(state['enemies']) == 0 and not state.get('game_over', False):
-    st.balloons()
-    st.success("ステージクリア！")
-    if st.button("次のステージへ"):
-        # 次のステージへ進む処理
-        game_logic()
-        st.rerun()
+
 if not state['game_over']:
     # 1. 描画を先に行う（現在の状態を描画）
     draw_grid()
