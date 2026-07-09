@@ -197,8 +197,8 @@ def game_logic():
         st.balloons()
         st.success("ステージクリア！")
         state['money'] += 100
-        if st.button("次のステージへ"):
-            reset_game_state(state['stage'] + 1)
+        
+        reset_game_state(state['stage'] + 1)
     
     # 5. ゲームオーバー判定
     if state['tower_hp'] <= 0:
