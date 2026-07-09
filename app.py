@@ -69,7 +69,7 @@ if 'game_state' not in st.session_state:
         'tower_hp': 10,
         'game_over': False,
         'towers':  {},
-        'enemies': [{'id': 0, 'x': 0, 'y': 3, 'attr': random.choice(list(ATTRIBUTES.keys())), 'hp': 5}]
+        'enemies': get_enemies_for_stage(1)
     }
 
 # --- カスタムCSS（スマホ最適化） ---
