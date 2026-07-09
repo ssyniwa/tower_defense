@@ -26,17 +26,25 @@ STAGE_PATHS = {
 def get_path(stage):
     # 定義がないステージはデフォルトでy=3の直線
     return STAGE_PATHS.get(stage, [3] * 6)
-
+def get_enemies_for_stage(stage):
+    """ステージに応じた数の敵を生成"""
+    count = 3 + (stage - 1) * 2  # ステージ1は3体、以降2体ずつ増加
+    enemies = []
+    for i in range(count):
+        # 属性をランダムに割り当て
+        attr = random.choice(['fire', 'water', 'thunder'])
+        # 敵を少しずつずらして出現させる（xをマイナスに設定）
+        enemies.append({
+            'id': i, 'x': -i, 'y': get_path(stage)[0], 
+            'attr': attr, 'hp': 5 + stage
+        })
+    return enemies
 def reset_game_state(new_stage):
-    """建築リセットおよびステージ進行"""
     st.session_state.game_state.update({
         'stage': new_stage,
-        'towers': {}, # 建築リセット
+        'towers': {},
         'money': 100,
-        'enemies': [
-            {'id': i, 'x': 0, 'y': get_path(new_stage)[0], 'attr': attr, 'hp': 5 + new_stage}
-            for i, attr in enumerate(['fire', 'water', 'stan'])
-        ]
+        'enemies': get_enemies_for_stage(new_stage)
     })
 def get_image_path(obj_type, stage, attr=None):
     """
@@ -82,12 +90,13 @@ state = st.session_state.game_state
 def draw_grid():
     state = st.session_state.game_state
     stage = state['stage']
+    current_path = get_path(stage)
     
     for y in range(6):
         cols = st.columns(6)
         for x in range(6):
             with cols[x]:
-                # 1. 画像の優先順位決定
+                # 画像の決定ロジック
                 img = None
                 
                 # 敵のチェック
@@ -100,15 +109,15 @@ def draw_grid():
                     attr = state['towers'][(x, y)]['attr']
                     img = get_image_path("tower", stage, attr)
                 
-                # 背景のチェック
+                # 背景のチェック（道か草地か）
                 if not img:
-                    if y == 3:
+                    # current_path[x] がその列の道
+                    if y == current_path[x]:
                         img = get_image_path("path", stage)
                     else:
                         img = get_image_path("grass", stage)
                 
                 st.image(img, use_container_width=True)
-                
                 # 建設ボタン
                 if st.button("建", key=f"b_{x}_{y}"):
                     if y != 3 and (x, y) not in state['towers']:
