@@ -159,7 +159,7 @@ def game_logic():
         if e['x'] < 6:
             e['y'] = path[e['x']] # 定義されたルートを辿る
         elif e['x'] >= 6:
-            state['tower_hp'] -= 1
+            state['tower_hp'] -= 2
             e['x'] = 0
 # 3. 撃破と報酬
     new_enemies = []
