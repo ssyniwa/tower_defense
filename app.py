@@ -95,7 +95,7 @@ def draw_grid():
         cols = st.columns(6)
         for x in range(6):
             with cols[x]:
-                # 画像の決定ロジック
+                is_tower = (x, y) in state['towers']
                 img = None
                 
                 # 敵のチェック
@@ -120,10 +120,11 @@ def draw_grid():
                 
                 st.image(img, use_container_width=True)
                 
-                if (x, y) in state['towers']:
-                    tower_hp = state['towers'][(x, y)]['hp']
-                    # HPの割合を計算 (MAX 10として)
-                    st.progress(min(tower_hp / 10, 1.0))
+                if is_tower:
+                    # state['towers'][(x, y)]['hp'] は game_logic で書き換わっているはず
+                    hp = state['towers'][(x, y)]['hp']
+                    # 0未満にならないよう制限
+                    st.progress(max(hp / 10, 0.0))
                 if y != current_path[x]:
                     # 既に塔があるか確認
                     if (x, y) not in state['towers']:
