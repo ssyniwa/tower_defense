@@ -210,7 +210,7 @@ if not state['game_over']:
     if st.button("▶ 次のターン"):
         game_logic()
         st.rerun()
-    draw_grid()
+    
 else:
     st.error("GAME OVER!")
     if st.button("リトライ"):
