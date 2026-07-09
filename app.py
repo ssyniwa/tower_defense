@@ -206,10 +206,14 @@ st.title("🏰 Magic Defense")
 st.write(f"Gold: {state['money']}")
 
 if not state['game_over']:
+    # 1. 描画を先に行う（現在の状態を描画）
     draw_grid()
-    if st.button("▶ 次のターン"):
-        game_logic()
-        st.rerun()
+    
+    # 2. ボタンを配置し、押されたら game_logic を実行するように指定
+    # ボタンは画面の下部に置くのが一般的です
+    if st.button("▶ 次のターン", on_click=game_logic):
+        # on_click が完了すると、自動的に再描画（rerun）が走ります
+        pass
     
 else:
     st.error("GAME OVER!")
