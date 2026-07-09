@@ -154,39 +154,31 @@ def game_logic():
     range_bonus = state['stage'] // 3 
     for pos, tower in state['towers'].items():
         for e in state['enemies']:
-            # タワーの射程内か
             if abs(pos[0] - e['x']) <= (1 + range_bonus) and abs(pos[1] - e['y']) <= (1 + range_bonus):
                 damage = 2 if ATTRIBUTES.get(tower['attr']) == e['attr'] else 1
                 e['hp'] -= damage
 
-    # --- 2. 敵の移動と、移動後のタワーへの接触ダメージ ---
+    # --- 2. 敵の移動 ---
     for e in state['enemies']:
-        # 敵を移動させる
         e['x'] += 1
         
-        # 【修正箇所】盤面内(x < 6)の時だけパスを参照する
-        if e['x'] < 6:
+        # 盤面内(0 <= x <= 5)であればルートを更新
+        if 0 <= e['x'] < 6:
             e['y'] = path[e['x']]
             
-            # タワー接触判定（座標チェック）
-            target_pos = None
-            # 敵の周囲4マスを確認
+            # タワー接触ダメージ
             for dx, dy in [(0, 1), (0, -1), (1, 0), (-1, 0)]:
                 check_pos = (e['x'] + dx, e['y'] + dy)
                 if check_pos in state['towers']:
-                    target_pos = check_pos
+                    state['towers'][check_pos]['hp'] -= 1
+                    if state['towers'][check_pos]['hp'] <= 0:
+                        del state['towers'][check_pos]
                     break
-            
-            if target_pos:
-                state['towers'][target_pos]['hp'] -= 1
-                if state['towers'][target_pos]['hp'] <= 0:
-                    del state['towers'][target_pos]
         
-        # ゴール判定 (x が 6 に達したとき)
-        else:
+        # ゴール判定（盤面外へ出た場合）
+        elif e['x'] >= 6:
             state['tower_hp'] -= 1
-            # 敵をリセットまたは削除（必要に応じて変更）
-            e['x'] = -1
+            e['x'] = 100 # 画面外へ退避
     # 3. 敵の撃破判定と報酬
     new_enemies = []
     for e in state['enemies']:
