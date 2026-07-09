@@ -149,43 +149,40 @@ def game_logic():
     state = st.session_state.game_state
     path = get_path(state['stage'])
     
-    # 射程強化：ステージが進むと攻撃範囲が広がる
+    # 1. 射程によるタワーからの攻撃
     range_bonus = state['stage'] // 3 
-    
     for pos, tower in state['towers'].items():
         for e in state['enemies']:
-            # 射程判定：(1 + ボーナス) マス以内
             if abs(pos[0] - e['x']) <= (1 + range_bonus) and abs(pos[1] - e['y']) <= (1 + range_bonus):
-                damage = 2 if ATTRIBUTES[tower['attr']] == e['attr'] else 1
+                damage = 2 if ATTRIBUTES.get(tower['attr']) == e['attr'] else 1
                 e['hp'] -= damage
 
-    # 敵の移動とルート適用
+    # 2. 敵の移動とタワーへのダメージ
     for e in state['enemies']:
         e['x'] += 1
         if e['x'] < 6:
             e['y'] = path[e['x']]
-            # 道の先にタワーがあればダメージを与えるロジック
+            # 【重要】敵がタワーと同じ座標にいたらダメージ
             if (e['x'], e['y']) in state['towers']:
-                state['towers'][(e['x'], e['y'])]['hp'] -= 2
-                # 塔のHPが0になったら破壊
+                state['towers'][(e['x'], e['y'])]['hp'] -= 2  # ダメージ量
+                # タワー破壊判定
                 if state['towers'][(e['x'], e['y'])]['hp'] <= 0:
                     del state['towers'][(e['x'], e['y'])]
-# 3. 撃破と報酬
-    new_enemies = []
-    for e in state['enemies']:
-        if e['hp'] > 0:
-            new_enemies.append(e)
-        else:
-            state['money'] += 20
-    state['enemies'] = new_enemies
-    # 全滅判定
+        elif e['x'] >= 6:
+            state['tower_hp'] -= 2
+            e['x'] = 0
+
+    # 3. 敵の撃破判定と報酬
+    state['enemies'] = [e for e in state['enemies'] if e['hp'] > 0]
+    
+    # 4. 全滅・ステージ進行判定
     if len(state['enemies']) == 0:
         state['money'] += 100
         reset_game_state(state['stage'] + 1)
     
-    
-    # 4. ゲームオーバー判定
-    if state['tower_hp'] <= 0: state['game_over'] = True
+    # 5. ゲームオーバー判定
+    if state['tower_hp'] <= 0:
+        state['game_over'] = True
 
 # --- メイン画面 ---
 st.title("🏰 Magic Defense")
