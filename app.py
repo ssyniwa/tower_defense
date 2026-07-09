@@ -43,7 +43,7 @@ def reset_game_state(new_stage):
     st.session_state.game_state.update({
         'stage': new_stage,
         'towers': {},
-        'money': 100,
+        'money': 150,
         'enemies': get_enemies_for_stage(new_stage)
     })
 def get_image_path(obj_type, stage, attr=None):
@@ -65,7 +65,7 @@ def get_counter_attr(enemy_attr):
 if 'game_state' not in st.session_state:
     st.session_state.game_state = {
         'stage': 1,
-        'money': 100,
+        'money': 150,
         'tower_hp': 10,
         'game_over': False,
         'towers':  {},
