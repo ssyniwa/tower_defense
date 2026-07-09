@@ -190,7 +190,7 @@ def game_logic():
     # 3. 敵の撃破判定と報酬
     new_enemies = []
     for e in state['enemies']:
-        if e['hp'] > 0:
+        if e['hp'] > 0 and e['x'] < 6]:
             new_enemies.append(e)
         else:
             state['money'] += 20
