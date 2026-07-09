@@ -83,16 +83,7 @@ st.markdown("""
     }
 </style>
 """, unsafe_allow_html=True)
-st.markdown("""
-<style>
-    /* 道路のセルを囲むクラス */
-    .path-cell {
-        border: 3px solid #FFD700 !important; /* ゴールドの枠線 */
-        box-sizing: border-box;
-        border-radius: 5px;
-    }
-</style>
-""", unsafe_allow_html=True)
+
 state = st.session_state.game_state
 
 # --- 描画ロジック ---
