@@ -35,7 +35,7 @@ def reset_game_state(new_stage):
         'money': 100,
         'enemies': [
             {'id': i, 'x': 0, 'y': get_path(new_stage)[0], 'attr': attr, 'hp': 5 + new_stage}
-            for i, attr in enumerate(['fire', 'water', 'thunder'])
+            for i, attr in enumerate(['fire', 'water', 'stan'])
         ]
     })
 def get_image_path(obj_type, stage, attr=None):
