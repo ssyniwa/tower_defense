@@ -149,25 +149,34 @@ def game_logic():
     state = st.session_state.game_state
     path = get_path(state['stage'])
     
-    # 1. 射程によるタワーからの攻撃
+    # --- 1. タワーから敵への攻撃 ---
     range_bonus = state['stage'] // 3 
     for pos, tower in state['towers'].items():
         for e in state['enemies']:
+            # タワーの射程内か
             if abs(pos[0] - e['x']) <= (1 + range_bonus) and abs(pos[1] - e['y']) <= (1 + range_bonus):
                 damage = 2 if ATTRIBUTES.get(tower['attr']) == e['attr'] else 1
                 e['hp'] -= damage
 
-    # 2. 敵の移動とタワーへのダメージ
+    # --- 2. 敵の移動と、移動後のタワーへの接触ダメージ ---
     for e in state['enemies']:
+        # 敵を移動させる
         e['x'] += 1
+        
+        # 移動先が盤面内か
         if e['x'] < 6:
             e['y'] = path[e['x']]
-            # 【重要】敵がタワーと同じ座標にいたらダメージ
+            
+            # 【重要】敵の新しい座標がタワーの座標と一致したら即座にHPを減らす
             if (e['x'], e['y']) in state['towers']:
-                state['towers'][(e['x'], e['y'])]['hp'] -= 2  # ダメージ量
-                # タワー破壊判定
+                # ダメージを与え、反映させる
+                state['towers'][(e['x'], e['y'])]['hp'] -= 2
+                
+                # HPが0以下なら塔を即座に削除
                 if state['towers'][(e['x'], e['y'])]['hp'] <= 0:
                     del state['towers'][(e['x'], e['y'])]
+                    
+        # ゴール判定
         elif e['x'] >= 6:
             state['tower_hp'] -= 2
             e['x'] = 0
