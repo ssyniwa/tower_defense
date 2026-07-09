@@ -195,7 +195,7 @@ def game_logic():
                     del state['towers'][(e['x']-1, e['y'])]        
         # ゴール判定
         elif e['x'] >= 6:
-            state['tower_hp'] -= 2
+            state['tower_hp'] -= 1
             e['x'] = 0
 
     # 3. 敵の撃破判定と報酬
@@ -219,7 +219,7 @@ def game_logic():
 
 # --- メイン画面 ---
 st.title("🏰 Magic Defense")
-st.write(f"Gold: {state['money']}")
+st.write(f"HP: {state['tower_hp']} | Gold: {state['money']}")
 
 if not state['game_over']:
     # 1. 描画を先に行う（現在の状態を描画）
