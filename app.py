@@ -171,6 +171,7 @@ def game_logic():
     state['enemies'] = new_enemies
     # 全滅判定
     if len(state['enemies']) == 0:
+        state['money'] += 100
         reset_game_state(state['stage'] + 1)
     
     
