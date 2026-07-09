@@ -169,7 +169,7 @@ def game_logic():
             e['y'] = path[e['x']]
             
             # 【重要】敵の新しい座標がタワーの座標と一致したら即座にHPを減らす
-            if (e['x'], e['y']) in state['towers']:
+            if (e['x'], e['y']+1) in state['towers'] or (e['x'], e['y']-1) in state['towers'] or (e['x']+1, e['y']) in state['towers'] or (e['x']-1, e['y']) in state['towers'] :
                 # ダメージを与え、反映させる
                 state['towers'][(e['x'], e['y'])]['hp'] -= 2
                 
