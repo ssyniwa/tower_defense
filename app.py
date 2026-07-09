@@ -173,7 +173,14 @@ def game_logic():
             e['x'] = 0
 
     # 3. 敵の撃破判定と報酬
-    state['enemies'] = [e for e in state['enemies'] if e['hp'] > 0]
+    new_enemies = []
+    for e in state['enemies']:
+        if e['hp'] > 0:
+            new_enemies.append(e)
+        else:
+            state['money'] += 20
+    state['enemies'] = new_enemies
+
     
     # 4. 全滅・ステージ進行判定
     if len(state['enemies']) == 0:
