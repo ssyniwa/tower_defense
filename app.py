@@ -120,18 +120,24 @@ def draw_grid():
                 
                 st.image(img, use_container_width=True)
                 
-                
+                if (x, y) in state['towers']:
+                    tower_hp = state['towers'][(x, y)]['hp']
+                    # HPの割合を計算 (MAX 10として)
+                    st.progress(min(tower_hp / 10, 1.0))
                 if y != current_path[x]:
                     # 既に塔があるか確認
                     if (x, y) not in state['towers']:
+                        # 建設時の処理（game_logic付近を修正）
                         if st.button("建", key=f"b_{x}_{y}"):
-                            # 周囲の敵を検索して属性を決定
-                            target_enemy = next((e for e in state['enemies'] if abs(e['x'] - x) <= 1 and abs(e['y'] - y) <= 1), None)
-                            attr = get_counter_attr(target_enemy['attr']) if target_enemy else "fire"
-                            
-                            state['towers'][(x, y)] = {'attr': attr}
-                            state['money'] -= 50
-                            st.rerun()
+                            if state['money'] >= 50: # 資金チェック追加
+                                # 周囲の敵を検索して属性を決定
+                                target_enemy = next((e for e in state['enemies'] if abs(e['x'] - x) <= 1 and abs(e['y'] - y) <= 1), None)
+                                attr = get_counter_attr(target_enemy['attr']) if target_enemy else "fire"
+                                
+                                # HPを含めて保存
+                                state['towers'][(x, y)] = {'attr': attr, 'hp': 10} 
+                                state['money'] -= 50
+                                st.rerun()
                     else:
                         # 塔がある場合はボタンを出さない、あるいは別のUIにする
                         st.empty() 
@@ -157,10 +163,13 @@ def game_logic():
     for e in state['enemies']:
         e['x'] += 1
         if e['x'] < 6:
-            e['y'] = path[e['x']] # 定義されたルートを辿る
-        elif e['x'] >= 6:
-            state['tower_hp'] -= 2
-            e['x'] = 0
+            e['y'] = path[e['x']]
+            # 道の先にタワーがあればダメージを与えるロジック
+            if (e['x'], e['y']) in state['towers']:
+                state['towers'][(e['x'], e['y'])]['hp'] -= 1
+                # 塔のHPが0になったら破壊
+                if state['towers'][(e['x'], e['y'])]['hp'] <= 0:
+                    del state['towers'][(e['x'], e['y'])]
 # 3. 撃破と報酬
     new_enemies = []
     for e in state['enemies']:
