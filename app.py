@@ -8,7 +8,29 @@ ATTRIBUTES = {
     "water": "fire",  # 水は火に強い
     "stan": "water"  # 草は水に強い
 }
+# --- ステージごとのルート定義 (各ステージのy座標リスト) ---
+# ステージが進むほどルートを複雑に（蛇行させる）
+STAGE_PATHS = {
+    1: [3, 3, 3, 3, 3, 3], # 単純
+    2: [3, 2, 2, 3, 4, 4], # 蛇行
+    # ... ステージ10まで同様に定義
+}
 
+def get_path(stage):
+    # 定義がないステージはデフォルトでy=3の直線
+    return STAGE_PATHS.get(stage, [3] * 6)
+
+def reset_game_state(new_stage):
+    """建築リセットおよびステージ進行"""
+    st.session_state.game_state.update({
+        'stage': new_stage,
+        'towers': {}, # 建築リセット
+        'money': 100,
+        'enemies': [
+            {'id': i, 'x': 0, 'y': get_path(new_stage)[0], 'attr': attr, 'hp': 5 + new_stage}
+            for i, attr in enumerate(['fire', 'water', 'thunder'])
+        ]
+    })
 def get_image_path(obj_type, stage, attr=None):
     """
     属性がある場合: images/fire_tower_stage1.png
@@ -91,19 +113,28 @@ def draw_grid():
 
 # --- ゲーム進行処理 ---
 def game_logic():
-    for e in state['enemies']:
-        e['x'] += 1
-        if e['x'] >= 6:
-            state['tower_hp'] -= 1
-            e['x'] = 0
+    state = st.session_state.game_state
+    path = get_path(state['stage'])
     
-    # 2. タワーの攻撃
+    # 射程強化：ステージが進むと攻撃範囲が広がる
+    range_bonus = state['stage'] // 3 
+    
     for pos, tower in state['towers'].items():
         for e in state['enemies']:
-            if abs(pos[0] - e['x']) <= 1 and abs(pos[1] - e['y']) <= 1:
+            # 射程判定：(1 + ボーナス) マス以内
+            if abs(pos[0] - e['x']) <= (1 + range_bonus) and abs(pos[1] - e['y']) <= (1 + range_bonus):
                 damage = 2 if ATTRIBUTES[tower['attr']] == e['attr'] else 1
                 e['hp'] -= damage
-    # 3. 撃破と報酬
+
+    # 敵の移動とルート適用
+    for e in state['enemies']:
+        e['x'] += 1
+        if e['x'] < 6:
+            e['y'] = path[e['x']] # 定義されたルートを辿る
+        elif e['x'] >= 6:
+            state['tower_hp'] -= 1
+            e['x'] = 0
+# 3. 撃破と報酬
     new_enemies = []
     for e in state['enemies']:
         if e['hp'] > 0:
@@ -111,13 +142,11 @@ def game_logic():
         else:
             state['money'] += 20
     state['enemies'] = new_enemies
-    # ステージ進行処理
-    # 敵の全滅時
+    # 全滅判定
     if len(state['enemies']) == 0:
-        state['stage'] = min(state['stage'] + 1, 10) # 10ステージまで
-        # 次の敵はランダム生成
-        new_attr = random.choice(list(ATTRIBUTES.keys()))
-        state['enemies'].append({'id': random.randint(1, 100), 'x': 0, 'y': 3, 'attr': new_attr, 'hp': 5 + state['stage']})
+        reset_game_state(state['stage'] + 1)
+    
+    
     # 4. ゲームオーバー判定
     if state['tower_hp'] <= 0: state['game_over'] = True
 
