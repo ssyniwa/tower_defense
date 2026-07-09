@@ -164,40 +164,29 @@ def game_logic():
         # 敵を移動させる
         e['x'] += 1
         
-        # 移動先が盤面内か
+        # 【修正箇所】盤面内(x < 6)の時だけパスを参照する
+        if e['x'] < 6:
+            e['y'] = path[e['x']]
+            
+            # タワー接触判定（座標チェック）
+            target_pos = None
+            # 敵の周囲4マスを確認
+            for dx, dy in [(0, 1), (0, -1), (1, 0), (-1, 0)]:
+                check_pos = (e['x'] + dx, e['y'] + dy)
+                if check_pos in state['towers']:
+                    target_pos = check_pos
+                    break
+            
+            if target_pos:
+                state['towers'][target_pos]['hp'] -= 1
+                if state['towers'][target_pos]['hp'] <= 0:
+                    del state['towers'][target_pos]
         
-        e['y'] = path[e['x']]
-        
-        # 【重要】敵の新しい座標がタワーの座標と一致したら即座にHPを減らす
-        if (e['x'], e['y']+1) in state['towers'] :
-            # ダメージを与え、反映させる
-            state['towers'][(e['x'], e['y']+1)]['hp'] -= 1
-            # HPが0以下なら塔を即座に削除
-            if state['towers'][(e['x'], e['y']+1)]['hp'] <= 0:
-                del state['towers'][(e['x'], e['y']+1)]
-        elif (e['x'], e['y']-1) in state['towers'] :
-            # ダメージを与え、反映させる
-            state['towers'][(e['x'], e['y']-1)]['hp'] -= 1
-            # HPが0以下なら塔を即座に削除
-            if state['towers'][(e['x'], e['y']-1)]['hp'] <= 0:
-                del state['towers'][(e['x'], e['y']-1)]
-        elif (e['x']+1, e['y']) in state['towers'] :
-            # ダメージを与え、反映させる
-            state['towers'][(e['x']+1, e['y'])]['hp'] -= 1
-            # HPが0以下なら塔を即座に削除
-            if state['towers'][(e['x']+1, e['y'])]['hp'] <= 0:
-                del state['towers'][(e['x']+1, e['y'])]
-        elif (e['x']-1, e['y']) in state['towers'] :
-            # ダメージを与え、反映させる
-            state['towers'][(e['x']-1, e['y'])]['hp'] -= 1
-            # HPが0以下なら塔を即座に削除
-            if state['towers'][(e['x']-1, e['y'])]['hp'] <= 0:
-                del state['towers'][(e['x']-1, e['y'])]        
-        # ゴール判定
-        if e['x'] >= 6:
+        # ゴール判定 (x が 6 に達したとき)
+        else:
             state['tower_hp'] -= 1
-            e['x'] = 0
-
+            # 敵をリセットまたは削除（必要に応じて変更）
+            e['x'] = -1
     # 3. 敵の撃破判定と報酬
     new_enemies = []
     for e in state['enemies']:
