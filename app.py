@@ -206,7 +206,7 @@ st.title("🏰 Magic Defense")
 st.write(f"Gold: {state['money']}")
 
 if not state['game_over']:
-    
+    draw_grid()
     if st.button("▶ 次のターン"):
         game_logic()
         st.rerun()
