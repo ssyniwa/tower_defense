@@ -118,15 +118,24 @@ def draw_grid():
                         img = get_image_path("grass", stage)
                 
                 st.image(img, use_container_width=True)
-                # 建設ボタン
-                if st.button("建", key=f"b_{x}_{y}"):
-                    if y != 3 and (x, y) not in state['towers']:
-                        target_enemy = next((e for e in state['enemies'] if abs(e['x'] - x) <= 1), None)
-                        attr = get_counter_attr(target_enemy['attr']) if target_enemy else "fire"
-                        state['towers'][(x, y)] = {'attr': attr}
-                        state['money'] -= 50
-                        st.rerun()
-
+                
+                if y != current_path[x]:
+                    # 既に塔があるか確認
+                    if (x, y) not in state['towers']:
+                        if st.button("建", key=f"b_{x}_{y}"):
+                            # 周囲の敵を検索して属性を決定
+                            target_enemy = next((e for e in state['enemies'] if abs(e['x'] - x) <= 1 and abs(e['y'] - y) <= 1), None)
+                            attr = get_counter_attr(target_enemy['attr']) if target_enemy else "fire"
+                            
+                            state['towers'][(x, y)] = {'attr': attr}
+                            state['money'] -= 50
+                            st.rerun()
+                    else:
+                        # 塔がある場合はボタンを出さない、あるいは別のUIにする
+                        st.empty() 
+                else:
+                    # 道の部分は建設不可なので何もしない
+                    st.empty()
 # --- ゲーム進行処理 ---
 def game_logic():
     state = st.session_state.game_state
