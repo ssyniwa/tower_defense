@@ -220,8 +220,7 @@ def game_logic():
     
     # 4. 全滅・ステージ進行判定
     if len(state['enemies']) == 0:
-        st.balloons()
-        st.success("ステージクリア！")
+        
         state['money'] += 100
         
         reset_game_state(state['stage'] + 1)
