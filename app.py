@@ -128,7 +128,7 @@ def draw_grid():
                 is_path = (y == current_path[x])
                 for e in state['enemies']:
                     if e['x'] == x and e['y'] == y:
-                        st.progress(max(e['hp'] / (5 + stage), 0.0))
+                        st.progress(max(e['hp'] / (5 + stage)*2, 0.0))
                 st.image(img, use_container_width=True)
                 
                 if is_tower:
