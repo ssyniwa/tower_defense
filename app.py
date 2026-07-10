@@ -22,7 +22,12 @@ STAGE_PATHS = {
     9: [4, 2, 3, 4, 2, 3], # 単純
     10: [4, 2, 4, 2, 4, 2], # 蛇行
 }
-
+def get_stage_info(stage):
+    if stage <= 3: return "通常敵"
+    if stage <= 7: return "硬化敵"
+    if stage <= 9: return "高速敵"
+    if stage == 10: return "最強敵"
+    return "？"
 def get_path(stage):
     # 定義がないステージはデフォルトでy=3の直線
     return STAGE_PATHS.get(stage, [3] * 6)
@@ -96,6 +101,8 @@ state = st.session_state.game_state
 
 # --- 描画ロジック ---
 def draw_grid():
+    # --- draw_grid 内の冒頭に以下を追加 ---
+    st.write(f"### ステージ{state['stage']}：{get_stage_info(state['stage'])}")
     state = st.session_state.game_state
     stage = state['stage']
     current_path = get_path(stage)
@@ -224,20 +231,25 @@ def game_logic():
 
 # --- メイン画面 ---
 st.title("🏰 Magic Defense")
-st.write(f"HP: {state['tower_hp']} | Gold: {state['money']}")
 
-if not state['game_over']:
-    # 1. 描画を先に行う（現在の状態を描画）
+if state['game_over']:
+    st.error("💀 ゲームオーバー！")
+    if st.button("初めから"):
+        del st.session_state.game_state
+        st.rerun()
+
+elif state['stage'] > 10:
+    st.balloons()
+    st.success("🎉 完全クリア！おめでとうございます！")
+    if st.button("初めから"):
+        del st.session_state.game_state
+        st.rerun()
+
+else:
+    st.write(f"HP: {state['tower_hp']} | Gold: {state['money']}")
     draw_grid()
     
-    # 2. ボタンを配置し、押されたら game_logic を実行するように指定
-    # ボタンは画面の下部に置くのが一般的です
     if st.button("▶ 次のターン", on_click=game_logic):
-        # on_click が完了すると、自動的に再描画（rerun）が走ります
         pass
     
-else:
-    st.error("GAME OVER!")
-    if st.button("リトライ"):
-        st.session_state.game_state = None
-        st.rerun()
+
