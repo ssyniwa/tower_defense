@@ -43,7 +43,7 @@ def get_enemies_for_stage(stage):
         elif stage <= 7: # 硬化
             hp, speed = (5 + stage) * 2, 0.5
         elif stage <= 9: # 高速
-            hp, speed = (5 + stage) // 2, 2
+            hp, speed = (5 + stage), 2
         else: # 最強 (ステージ10)
             hp, speed = (5 + stage) * 2, 2
             
