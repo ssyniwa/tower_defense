@@ -137,7 +137,7 @@ def draw_grid():
                 for e in state['enemies']:
                     if e['x'] == x and e['y'] == y:
                         st.progress(max(e['hp'] / ((5 + stage)*2), 0.0))
-                st.image(img, width=70)
+                st.image(img, width=100)
                 
                 if is_tower:
                     # state['towers'][(x, y)]['hp'] は game_logic で書き換わっているはず
