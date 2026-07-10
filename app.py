@@ -102,10 +102,11 @@ state = st.session_state.game_state
 # --- 描画ロジック ---
 def draw_grid():
     # --- draw_grid 内の冒頭に以下を追加 ---
-    st.write(f"### ステージ{state['stage']}：{get_stage_info(state['stage'])}")
+    
     state = st.session_state.game_state
     stage = state['stage']
     current_path = get_path(stage)
+    st.write(f"### ステージ{state['stage']}：{get_stage_info(state['stage'])}")
     st.write(f"### 残りの敵: {len(state['enemies'])}体")
     for y in range(6):
         cols = st.columns(6)
