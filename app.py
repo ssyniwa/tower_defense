@@ -27,16 +27,25 @@ def get_path(stage):
     # 定義がないステージはデフォルトでy=3の直線
     return STAGE_PATHS.get(stage, [3] * 6)
 def get_enemies_for_stage(stage):
-    """ステージに応じた数の敵を生成"""
-    count = 3 + (stage - 1) * 2  # ステージ1は3体、以降2体ずつ増加
+    count = 3 + (stage - 1) * 2
     enemies = []
     for i in range(count):
-        # 属性をランダムに割り当て
         attr = random.choice(['fire', 'water', 'stan'])
-        # 敵を少しずつずらして出現させる（xをマイナスに設定）
+        
+        # 特徴の決定
+        if stage <= 3: # 通常
+            hp, speed = 5 + stage, 1
+        elif stage <= 7: # 硬化
+            hp, speed = (5 + stage) * 2, 0.5
+        elif stage <= 9: # 高速
+            hp, speed = (5 + stage) // 2, 2
+        else: # 最強 (ステージ10)
+            hp, speed = (5 + stage) * 2, 2
+            
         enemies.append({
             'id': i, 'x': -i, 'y': get_path(stage)[0], 
-            'attr': attr, 'hp': 5 + stage
+            'attr': attr, 'hp': max(1, hp), 
+            'speed': speed # 速度をデータに追加
         })
     return enemies
 def reset_game_state(new_stage):
@@ -163,7 +172,16 @@ def game_logic():
 
     # --- 2. 敵の移動 ---
     for e in state['enemies']:
-        e['x'] += 1
+        # 移動量（speedが0.5なら2ターンに1回進む）
+        move_amount = e.get('speed', 1)
+        
+        # 簡易移動ロジック: 蓄積変数などを使わず、speed >= 1 と < 1 で分岐
+        if move_amount >= 1:
+            e['x'] += int(move_amount)
+        else:
+            # 0.5 の場合は、ランダムあるいはフラグで移動をスキップ
+            if random.random() < move_amount:
+                e['x'] += 1
         
         # 盤面内(0 <= x <= 5)であればルートを更新
         if 0 <= e['x'] < 6:
